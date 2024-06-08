@@ -13,9 +13,13 @@ export function Header() {
                     <Link href='/'>
                         <h1 className={styles.logo}>Board Taks</h1>
                     </Link>
-                    <Link href='/dashboard' className={styles.link}>
-                        <span>Meu painel</span>
-                    </Link>
+                    {
+                        session?.user && (
+                            <Link href='/dashboard' className={styles.link}>
+                                <span>Meu painel</span>
+                            </Link>
+                        )
+                    }
                 </nav>
                 {
                     status === 'loading' ? (
