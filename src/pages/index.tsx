@@ -19,8 +19,17 @@ export default function Home() {
             priority
           />
         </div>
-        <h1 className={styles.title}>Organize seus estudos<br/>com o Board Taks</h1>
-
+        <h1 className={styles.title}>
+          Organize seus estudos<br />com o Board Taks
+        </h1>
+        <div className={styles.infoContent}>
+          <section className={styles.box}>
+            <span>+12 posts</span>
+          </section>
+          <section className={styles.box}>
+            <span>+90 comentários</span>
+          </section>
+        </div>
       </main>
     </>
   );
