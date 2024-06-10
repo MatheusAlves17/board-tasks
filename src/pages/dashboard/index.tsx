@@ -1,14 +1,28 @@
+import {
+    ChangeEvent,
+    FormEvent,
+    useEffect,
+    useState
+} from "react";
+
 import Head from "next/head";
 import { GetServerSideProps } from "next";
-import { PiShareDuotone, PiTrash } from "react-icons/pi";
-
 import { getSession } from 'next-auth/react';
 
 import styles from './styles.module.css';
+import { PiShareDuotone, PiTrash } from "react-icons/pi";
+
 import { Textarea } from "@/components/Textarea";
-import { ChangeEvent, FormEvent, useState } from "react";
-import { addDoc, collection } from "firebase/firestore";
+
 import { db } from "@/services/firebaseConfiguration";
+import {
+    addDoc,
+    collection,
+    query,
+    where,
+    orderBy,
+    onSnapshot
+} from "firebase/firestore";
 
 interface DashboardProps {
     user: {
@@ -16,10 +30,19 @@ interface DashboardProps {
     }
 }
 
+interface TasksProps {
+    id: string;
+    created: string;
+    public: string;
+    tarefa: string;
+    user: string;
+}
+
 export default function Dashboard({ user }: DashboardProps) {
 
     const [input, setInput] = useState('');
     const [publicTask, setPublicTask] = useState(false);
+    const [tasks, setTasks] = useState<TasksProps[]>([]);
 
     const handlePublicTask = (event: ChangeEvent<HTMLInputElement>) => {
         setPublicTask(event.target.checked);
@@ -45,6 +68,35 @@ export default function Dashboard({ user }: DashboardProps) {
             console.log(error);
         };
     };
+
+    useEffect(() => {
+        const loadTasks = async () => {
+            const tasksRef = collection(db, 'tarefas');
+            const q = query(
+                tasksRef,
+                orderBy('created', 'desc'),
+                where("user", "==", user?.email)
+            )
+
+            onSnapshot(q, (snapshot) => {
+                let taskList = [] as TasksProps[];
+
+                snapshot.forEach((doc) => {
+                    taskList.push({
+                        id: doc.id,
+                        tarefa: doc.data().tarefa,
+                        created: doc.data().created,
+                        public: doc.data().public,
+                        user: doc.data().user,
+                    });
+                });
+
+                console.log(taskList);
+                setTasks(taskList);
+            });
+        };
+        loadTasks();
+    }, [user.email]);
 
     return (
         <>
@@ -76,26 +128,32 @@ export default function Dashboard({ user }: DashboardProps) {
                 </section>
                 <section className={styles.taskContainer}>
                     <h1 className={styles.titleTask}>Minhas tarefas</h1>
-                    <article className={styles.task}>
-                        <div className={styles.tagContainer}>
-                            <label className={styles.tag}>PÚBLICO</label>
-                            <button className={styles.tagButton}>
-                                <PiShareDuotone
-                                    size={22}
-                                    color="#3183ff"
-                                />
-                            </button>
-                        </div>
-                        <div className={styles.taskContent}>
-                            <p>Tarefa 1</p>
-                            <button className={styles.buttonTrash}>
-                                <PiTrash
-                                    size={24}
-                                    color="#ea3140"
-                                />
-                            </button>
-                        </div>
-                    </article>
+                    {
+                        tasks.map((item) => (
+                            <article key={item.id} className={styles.task}>
+                                {item.public &&
+                                    <div className={styles.tagContainer}>
+                                        <label className={styles.tag}>PÚBLICA</label>
+                                        <button className={styles.tagButton}>
+                                            <PiShareDuotone
+                                                size={22}
+                                                color="#3183ff"
+                                            />
+                                        </button>
+                                    </div>
+                                }
+                                <div className={styles.taskContent}>
+                                    <p>{item.tarefa}</p>
+                                    <button className={styles.buttonTrash}>
+                                        <PiTrash
+                                            size={24}
+                                            color="#ea3140"
+                                        />
+                                    </button>
+                                </div>
+                            </article>
+                        ))
+                    }
                 </section>
             </main>
         </>
@@ -117,7 +175,7 @@ export const getServerSideProps: GetServerSideProps = async ({ req }) => {
 
     return {
         props: {
-            user:{
+            user: {
                 email: session?.user?.email
             }
         }
