@@ -21,8 +21,11 @@ import {
     query,
     where,
     orderBy,
-    onSnapshot
+    onSnapshot,
+    doc,
+    deleteDoc
 } from "firebase/firestore";
+import Link from "next/link";
 
 interface DashboardProps {
     user: {
@@ -68,6 +71,15 @@ export default function Dashboard({ user }: DashboardProps) {
             console.log(error);
         };
     };
+
+    const handleShare = async (id: string) => {
+        await navigator.clipboard.writeText(`${process.env.NEXT_PUBLIC_URL}/task/${id}`);
+    }
+
+    const handleDeleteTask = async (id: string) => {
+        const docRef = doc(db, 'tarefas', id);
+        await deleteDoc(docRef);
+    }
 
     useEffect(() => {
         const loadTasks = async () => {
@@ -134,7 +146,7 @@ export default function Dashboard({ user }: DashboardProps) {
                                 {item.public &&
                                     <div className={styles.tagContainer}>
                                         <label className={styles.tag}>PÚBLICA</label>
-                                        <button className={styles.tagButton}>
+                                        <button className={styles.tagButton} onClick={() => handleShare(item.id)}>
                                             <PiShareDuotone
                                                 size={22}
                                                 color="#3183ff"
@@ -143,8 +155,15 @@ export default function Dashboard({ user }: DashboardProps) {
                                     </div>
                                 }
                                 <div className={styles.taskContent}>
-                                    <p>{item.tarefa}</p>
-                                    <button className={styles.buttonTrash}>
+                                    {
+                                        item.public ?
+                                            <Link href={`/tasks/${item.id}`}>
+                                                <p>{item.tarefa}</p>
+                                            </Link>
+                                            :
+                                            <p>{item.tarefa}</p>
+                                    }
+                                    <button className={styles.buttonTrash} onClick={() => handleDeleteTask(item.id)}>
                                         <PiTrash
                                             size={24}
                                             color="#ea3140"
