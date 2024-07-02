@@ -55,3 +55,8 @@
     margin-top: 8px;
 
 }
+
+.commentsButton:disabled {
+    background-color: #3183ff78;
+    cursor: not-allowed;
+}

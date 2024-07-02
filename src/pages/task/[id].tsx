@@ -8,9 +8,12 @@ import {
     collection,
     query,
     where,
-    getDoc
+    getDoc,
+    addDoc
 } from 'firebase/firestore';
 import { Textarea } from "@/components/Textarea";
+import { useSession } from "next-auth/react";
+import { ChangeEvent, FormEvent, useState } from "react";
 
 interface ITaskProps {
     item: {
@@ -24,6 +27,34 @@ interface ITaskProps {
 }
 
 export default function Task({ item }: ITaskProps) {
+    const { data: session } = useSession();
+
+    const [input, setInput] = useState('');
+
+    const handleComment = async (e: FormEvent) => {
+        e.preventDefault();
+
+        if (input === '') return;
+        if (!session?.user?.email || !session?.user?.name) return;
+
+        try {
+            const docRef = await addDoc(collection(db, 'comments'), {
+                comment: input,
+                created: new Date(),
+                user: session?.user?.email,
+                name: session?.user?.name,
+                taskId: item.taskId
+            });
+
+            setInput('');
+        } catch (error) {
+            console.log(error);
+            
+
+        }
+
+    }
+
     return (
         <div className={styles.container}>
             <Head>
@@ -37,11 +68,16 @@ export default function Task({ item }: ITaskProps) {
             </main>
             <section className={styles.comments}>
                 <h2 className={styles.commentsTitle}>Deixar comentário</h2>
-                <form>
+                <form onSubmit={handleComment}>
                     <Textarea
                         placeholder="Digite seu comentário...."
+                        value={input}
+                        onChange={(e: ChangeEvent<HTMLTextAreaElement>) => setInput(e.target.value)}
                     />
-                    <button className={styles.commentsButton}>Enviar comentário</button>
+                    <button
+                        disabled={!session?.user}
+                        className={styles.commentsButton}
+                    >Enviar comentário</button>
                 </form>
             </section>
         </div>
