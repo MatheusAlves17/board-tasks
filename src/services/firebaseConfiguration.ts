@@ -2,12 +2,12 @@ import { initializeApp } from "firebase/app";
 import { getFirestore } from 'firebase/firestore';
 
 const firebaseConfig = {
-    apiKey: "AIzaSyD9EI4FAQ9msxH_MB9qHM0rvelIzoYNIuU",
-    authDomain: "board-tasks.firebaseapp.com",
-    projectId: "board-tasks",
-    storageBucket: "board-tasks.appspot.com",
-    messagingSenderId: "425914603283",
-    appId: "1:425914603283:web:98e792c8c72c554db62ce6"
+    apiKey: process.env.NEXT_API_KEY,
+    authDomain: process.env.NEXT_AUTH_DOMAIN,
+    projectId: process.env.NEXT_PROJECT_ID,
+    storageBucket: process.env.NEXT_STORAGE_BUCKET,
+    messagingSenderId: process.env.NEXT_MESSAGING_SENDER_ID,
+    appId: process.env.NEXT_APP_ID
 };
 
 const firebaseApp = initializeApp(firebaseConfig);
