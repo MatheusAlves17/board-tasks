@@ -10,7 +10,8 @@ import {
     where,
     getDoc,
     addDoc,
-    getDocs
+    getDocs,
+    deleteDoc,
 } from 'firebase/firestore';
 import { Textarea } from "@/components/Textarea";
 import { useSession } from "next-auth/react";
@@ -77,6 +78,24 @@ export default function Task({ item, allComments }: ITaskProps) {
 
     }
 
+    const handleDelete = async (id: string) => {
+
+        try {
+            const docRef = doc(db, 'comments', id);
+            await deleteDoc(docRef);
+
+            const deleteComment = comments.filter((item) => item.id != id);
+
+            setComments(deleteComment);
+
+
+        } catch (error) {
+            console.log(error)
+        }
+
+
+    }
+
     return (
         <div className={styles.container}>
             <Head>
@@ -113,7 +132,7 @@ export default function Task({ item, allComments }: ITaskProps) {
                         <article key={comment.id} className={styles.comment}>
                             <div className={styles.headComment}>
                                 <label className={styles.commentsLabel}>{comment.name}</label>
-                                <button className={styles.buttonTrash}>
+                                <button className={styles.buttonTrash} onClick={() => handleDelete(comment.id)}>
                                     {
                                         session?.user?.email === comment.user &&
                                         <PiTrash
