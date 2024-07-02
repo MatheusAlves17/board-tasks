@@ -9,11 +9,13 @@ import {
     query,
     where,
     getDoc,
-    addDoc
+    addDoc,
+    getDocs
 } from 'firebase/firestore';
 import { Textarea } from "@/components/Textarea";
 import { useSession } from "next-auth/react";
 import { ChangeEvent, FormEvent, useState } from "react";
+import { PiTrash } from "react-icons/pi";
 
 interface ITaskProps {
     item: {
@@ -23,13 +25,24 @@ interface ITaskProps {
         created: string;
         taskId: string;
 
-    }
+    };
+    allComments: ICommentsProps[];
 }
 
-export default function Task({ item }: ITaskProps) {
+interface ICommentsProps {
+    id: string;
+    comments: string;
+    taskId: string;
+    user: string;
+    name: string;
+}
+
+export default function Task({ item, allComments }: ITaskProps) {
     const { data: session } = useSession();
 
     const [input, setInput] = useState('');
+    const [comments, setComments] = useState<ICommentsProps[]>(allComments || []);
+
 
     const handleComment = async (e: FormEvent) => {
         e.preventDefault();
@@ -46,10 +59,19 @@ export default function Task({ item }: ITaskProps) {
                 taskId: item.taskId
             });
 
+            const data: ICommentsProps = {
+                id: docRef.id,
+                comments: input,
+                user: session?.user?.email,
+                name: session?.user?.name,
+                taskId: item.taskId
+            }
+
+            setComments((oldItems) => [...oldItems, data]);
             setInput('');
         } catch (error) {
             console.log(error);
-            
+
 
         }
 
@@ -66,7 +88,7 @@ export default function Task({ item }: ITaskProps) {
                     <p>{item?.task}</p>
                 </article>
             </main>
-            <section className={styles.comments}>
+            <section className={styles.commentsContainer}>
                 <h2 className={styles.commentsTitle}>Deixar comentário</h2>
                 <form onSubmit={handleComment}>
                     <Textarea
@@ -80,6 +102,32 @@ export default function Task({ item }: ITaskProps) {
                     >Enviar comentário</button>
                 </form>
             </section>
+            <section className={styles.commentsContainer}>
+                <h2 className={styles.commentsTitle}>Todos comentários</h2>
+
+                {
+                    comments.length === 0 && <span>Nenhum comentário foi encontrado...</span>
+                }
+                {
+                    comments.map((comment) => (
+                        <article key={comment.id} className={styles.comment}>
+                            <div className={styles.headComment}>
+                                <label className={styles.commentsLabel}>{comment.name}</label>
+                                <button className={styles.buttonTrash}>
+                                    {
+                                        session?.user?.email === comment.user &&
+                                        <PiTrash
+                                            size={24}
+                                            color="#ea3140"
+                                        />
+                                    }
+                                </button>
+                            </div>
+                            <p>{comment.comments}</p>
+                        </article>
+                    ))
+                }
+            </section>
         </div>
     );
 };
@@ -90,7 +138,21 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
 
     const docRef = doc(db, 'tarefas', id);
 
-    const snapshot = await getDoc(docRef)
+    const q = query(collection(db, 'comments'), where('taskId', '==', id))
+    const snapshotComments = await getDocs(q);
+
+    let allComments: ICommentsProps[] = [];
+
+    snapshotComments.forEach((comment) => {
+        allComments.push({
+            id: comment.id,
+            comments: comment.data().comment,
+            user: comment.data().user,
+            name: comment.data().name,
+            taskId: comment.data().taskId
+        })
+    })
+    const snapshot = await getDoc(docRef);
 
     if (snapshot.data() === undefined || !snapshot.data()?.public) {
         return {
@@ -114,7 +176,8 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
 
     return {
         props: {
-            item: task
+            item: task,
+            allComments: allComments
         }
     }
 }

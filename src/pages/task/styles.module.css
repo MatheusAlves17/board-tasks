@@ -33,13 +33,13 @@
     width: 100%;
 }
 
-.comments {
+.commentsContainer {
     width: 100%;
     max-width: 1024px;
     margin-top: 40px;
 }
 
-.comments h2 {
+.commentsContainer h2 {
     margin-bottom: 16px;
 }
 
@@ -59,4 +59,39 @@
 .commentsButton:disabled {
     background-color: #3183ff78;
     cursor: not-allowed;
+}
+
+.comment {
+    width: 100%;
+    padding: 14px;
+
+    margin-bottom: 8px;
+
+    border-radius: 4px;
+    border: 1px solid #ddd;
+}
+
+.headComment {
+    display: flex;
+    align-items: center;
+}
+
+.commentsLabel {
+    padding: 4px 8px;
+    margin-right: 8px;
+    border-radius: 4px;
+
+    background-color: #CCC;
+}
+
+.buttonTrash{
+    background: none;
+    border: none;
+    outline: none;
+    cursor: pointer;
+}
+
+.comment p{
+    margin-top: 14px;
+    white-space: pre-wrap;
 }
