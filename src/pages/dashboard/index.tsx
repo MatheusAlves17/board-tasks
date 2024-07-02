@@ -157,7 +157,7 @@ export default function Dashboard({ user }: DashboardProps) {
                                 <div className={styles.taskContent}>
                                     {
                                         item.public ?
-                                            <Link href={`/tasks/${item.id}`}>
+                                            <Link href={`/task/${item.id}`}>
                                                 <p>{item.tarefa}</p>
                                             </Link>
                                             :

@@ -1,7 +1,8 @@
-# Board Tasks
-Projeto desenvolvido em Next.js para publicar tarefas em comunidade
+# Board tasks
 
-## Tecnologias usadas
+Esse é um projeto de gerenciamento de tarefas integrado com Firebase e NextAuth;
+
+As tecnologias usadas, são:
 - Next.js;
-- Firebase;
-- Autenticação via Google Account;
+- React;
+- NextAuth;
